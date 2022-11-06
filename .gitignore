@@ -50,3 +50,10 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+Dual PCM Compress/obj/Debug/Dual PCM Compress.csproj.SuggestedBindingRedirects.cache
+Dual PCM Compress/obj/Debug/Dual PCM Compress.csproj.FileListAbsolute.txt
+Dual PCM Compress/obj/Debug/Dual PCM Compress.csproj.CoreCompileInputs.cache
+Dual PCM Compress/obj/Debug/Dual PCM Compress.csproj.AssemblyReference.cache
+Dual PCM Compress/obj/Debug/.NETFramework,Version=v4.6.2.AssemblyAttributes.cs
+Dual PCM Compress/bin/Debug/S2 SoundDriver Compress.exe.config
+Dual PCM Compress/.vscode/tasks.json

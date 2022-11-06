@@ -7,8 +7,8 @@
     <ProjectGuid>{62AF7760-CBDE-4169-8497-A68EEBEB567B}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>Dual_PCM_Compress</RootNamespace>
-    <AssemblyName>Dual PCM Compress</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <AssemblyName>S2 SoundDriver Compress</AssemblyName>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
