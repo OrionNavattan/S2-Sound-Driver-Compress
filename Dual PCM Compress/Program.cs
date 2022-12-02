@@ -12,16 +12,20 @@ namespace Dual_PCM_Compress {
 		static void Main(string[] args) {
 			if (args.Length < 4) {
 				Console.Write(
-					"Usage: \"S2 Sound Driver Compress\" <driver bin> <settings> <output file> <compressor> <-a>\n" + 
+					"Usage: \"S2 Sound Driver Compress\" <driver bin> <settings> <output file> <compressor> <compressor flag> <-s>\n" + 
 					"<driver bin> :  Binary output data for the Sonic 2 driver\n" +
-					"<settings> :    Settings file containing the data needed to fix the driver binary\n" +
+					"<settings> :    Settings file containing the reserved space for the driver binary, the start location,\n"+
+					"and the location to patch in the saxman decompressor\n" +
 					"<output file> : File to put the compressed data at\n" +
 					"<compressor> :  The file location of the saxman compressor\n" +
-					"<-a> : Optional flag for accurate sound driver compression \n" + 
+					"<compressor flag> : Optional flag to pass to Saxman Compressor (e for compression if using Saxmandrv,\n" + 
+					"-S for excluding size if using saxcmp);\n"+
+					"<-s> : if this argument is set, a stray byte $4E will be inserted at the end of the compressed driver\n"+
 					"This is a modified version of Natsumi's Dual PCM Compress, tailored to the needs\n" +
-					"of Sonic the Hedgehog 2. It has been modified to correctly pass the -a argument for\n" +
-					"accurate compression, and to allow it to patch the Saxman decompressor in the ROM\n" +
-					"with the size of the compressed driver binary.\n" 
+					"of Sonic the Hedgehog 2. It has been modified to pass additional arguments to\n" +
+					"to the compresser, to allow it to patch the Saxman decompressor in the ROM\n" +
+					"with the size of the compressed driver binary, and to insert a stray byte at the\n"+
+					"end of the compressed driver to replicate a defect present in all retail builds of the game."
 				);
 
 				Console.ReadKey();
@@ -37,7 +41,7 @@ namespace Dual_PCM_Compress {
 				}
 
 				if (!File.Exists(args[1])) {
-					Console.WriteLine("Unable to read input file " + args[1]); // settings will contain an additional entry: the location of the sound driver size in the Saxman decompressor
+					Console.WriteLine("Unable to read input file " + args[1]); // settings contain an additional entry: the location of the sound driver size in the Saxman decompressor
 					Console.ReadKey();
 					return;
 				}
@@ -53,6 +57,7 @@ namespace Dual_PCM_Compress {
 				int outaddr = ReadLong(settings, 0); 
 				int maxlen = ReadLong(settings, 4);
 			 	int patchaddr = ReadLong(settings, 8); // new variable containing the location of the value to patch in the Saxman decompressor
+				string straybyte = args[5];
 
 				long inlen = new FileInfo(args[2]).Length;
 
@@ -99,13 +104,27 @@ namespace Dual_PCM_Compress {
 				}
 				// get length of compressed driver
 				long actuallen = new FileInfo(args[0] + ".sax").Length;
-				ushort sizepatchinter = Convert.ToUInt16(actuallen);
+
 
 				// if it is 0 or less, it probably failed
 				if (actuallen <= 0) {
 					Console.WriteLine("Could not compress file correctly, unable to continue.");
 					Console.ReadKey();
 					return;
+				}
+
+				// if straybyte is set, insert stray byte 0x4E at end of compressed driver, and increment actuallen by 1
+				if(String.Equals(straybyte, "-s")) {
+
+					using (FileStream af = File.OpenWrite(args[0] + ".sax")){
+						af.Seek(actuallen, SeekOrigin.Begin);
+					
+							using(BinaryWriter x = new BinaryWriter(af)) {
+								x.Write((byte)0x4E);
+							}
+					}
+					actuallen++;
+
 				}
 
 				// check if the compressed driver fits
@@ -116,7 +135,7 @@ namespace Dual_PCM_Compress {
 				}
 
 				// convert actuallen to big-endian word for patching saxman compressor
-		
+				ushort sizepatchinter = Convert.ToUInt16(actuallen);
 				byte[] sizepatch = BitConverter.GetBytes(sizepatchinter);
     			Array.Reverse(sizepatch);
 
@@ -126,20 +145,18 @@ namespace Dual_PCM_Compress {
 
 					using (FileStream cf = File.OpenRead(args[0] + ".sax")) { // open compressed driver, change to .sax
 						cf.CopyTo(fs, (int)actuallen); // write compressed driver
-					
-					}
-				
-				}
+						
+						}
 
-				using(FileStream fs = File.OpenWrite(args[2])) { // open rom file
+					fs.Seek(patchaddr, SeekOrigin.Begin); // address of size to patch in Saxman decompressor
 
-					fs.Seek(patchaddr, SeekOrigin.Begin); // address where size will be patched in Saxman decompressor
-					
-					using(BinaryWriter w = new BinaryWriter(fs)) {
-						w.Write(sizepatch);
-					}	
+						using(BinaryWriter w = new BinaryWriter(fs)) {
+							w.Write(sizepatch);		// patch the Saxman decompressor
+						}
 
 				}
+
+
 				// delete files and send message
 				File.Delete(args[0] + ".sax");
 				File.Delete(args[0]);

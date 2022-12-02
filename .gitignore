@@ -57,3 +57,5 @@ Dual PCM Compress/obj/Debug/Dual PCM Compress.csproj.AssemblyReference.cache
 Dual PCM Compress/obj/Debug/.NETFramework,Version=v4.6.2.AssemblyAttributes.cs
 Dual PCM Compress/bin/Debug/S2 SoundDriver Compress.exe.config
 Dual PCM Compress/.vscode/tasks.json
+
+.fake
